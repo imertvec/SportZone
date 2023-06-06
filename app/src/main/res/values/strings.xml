@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">SportZone</string>
+    <string name="app_name_splitted">Sport\nZone</string>
+    <string name="list_title">2023* best worldwide scorers</string>
+    <string name="players">Players</string>
+    <string name="goals">Goals</string>
+    <string name="name">Name</string>
+    <string name="nationality">Nationality</string>
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+    <string name="born_on">Born on</string>
+    <string name="number_international_caps">Num of international Caps</string>
+    <string name="first_cap">First Cap</string>
+    <string name="first_i_goal">First international goal</string>
+    <string name="best_foot">Best foot</string>
+    <string name="impact_goals">Impact goals</string>
+    <string name="impact_assist">Impact assist</string>
+    <string name="matches">Matches</string>
+    <string name="played">Played</string>
+    <string name="team">Team</string>
+
+    <string name="list_bottom_header">* This ranking is based on official matches played during the whole year, all competitions included, like international ones for example, at every level, among all competitions covered by footballdatabase.eu.</string>
+</resources>
