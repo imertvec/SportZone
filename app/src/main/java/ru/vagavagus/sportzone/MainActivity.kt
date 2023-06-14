@@ -1,5 +1,6 @@
 package ru.vagavagus.sportzone
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,7 +25,13 @@ import ru.vagavagus.sportzone.presentation.details.components.DetailsViewModel
 import ru.vagavagus.sportzone.presentation.home.HomeScreen
 import ru.vagavagus.sportzone.presentation.home.components.HomeViewModel
 import ru.vagavagus.sportzone.presentation.splash.SplashScreen
+import ru.vagavagus.sportzone.presentation.splash.SplashViewModel
+import ru.vagavagus.sportzone.presentation.webview.WebViewCompose
 import ru.vagavagus.sportzone.ui.theme.SportZoneTheme
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.util.Base64.Encoder
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,11 +48,37 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.Splash.route
                     ) {
                         composable(route = Screen.Splash.route) {
+                            val viewModel = getViewModel<SplashViewModel>()
+                            viewModel.fetchUrl(
+                                name = android.os.Build.MODEL,
+                                loc = this@MainActivity.resources.configuration.locale.language,
+                                unique = fetchUID()
+                            )
+
                             SplashScreen(
                                 onNavigate = {
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(route = Screen.Splash.route) {
-                                            inclusive = true
+                                    val state = viewModel.state.value
+
+                                    if(state.url == "no")
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(route = Screen.Splash.route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                    if(state.url == "nopush") {
+                                        disablePush()
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(route = Screen.Splash.route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                    }
+                                    if(state.url.contains("http")) {
+                                        val encodedUrl = URLEncoder.encode(state.url, StandardCharsets.UTF_8.toString())
+                                        navController.navigate("${Screen.WebView.route}/$encodedUrl") {
+                                            popUpTo(route = Screen.Splash.route) {
+                                                inclusive = true
+                                            }
                                         }
                                     }
                                 }
@@ -77,9 +110,33 @@ class MainActivity : ComponentActivity() {
                                 onLaunch = { viewModel.fetchDetailsById(playerId) }
                             )
                         }
+                        composable(
+                            route = "${Screen.WebView.route}/{url}",
+                            arguments = listOf(
+                                navArgument(name = "url") { NavType.StringType }
+                            )
+                        ) {
+                            val url = it.arguments?.getString("url") ?: "https://google.com"
+                            WebViewCompose(url)
+                        }
                     }
                 }
             }
         }
+    }
+
+    private fun fetchUID(): String {
+        val sharedPrefs = getSharedPreferences("sharedPreferences", Context.MODE_PRIVATE)
+        var unique = sharedPrefs.getString("unique", null)
+        unique?.let { return it }
+        unique = UUID.randomUUID().toString()
+
+        sharedPrefs.edit().putString("unique", unique).apply()
+        return unique
+    }
+
+    private fun disablePush() {
+        val sharedPrefs = getSharedPreferences("sharedPreferences", Context.MODE_PRIVATE)
+        sharedPrefs.edit().putBoolean("disabledpush", true).apply()
     }
 }
